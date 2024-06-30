@@ -1,14 +1,44 @@
 var port = process.env.PORT || 3000,
     io = require('socket.io')(port),
     gameSocket = null;
-io.on('connection',function(socket){
-    console.log("User Connected");
-   socket.on('message',function(msg){
-      console.log(msg.test2);
-      socket.emit('message',{test:`received message `});
-   });
-    socket.on("disconnect", function (data) {
-        console.log("User Disconnected");
+
+gameSocket = io.on('connection', function(socket){
+    console.log('socket connected: ' + socket.id);
+
+    socket.on('disconnect', function(){
+        console.log('socket disconnected: ' + socket.id);
     });
-    
+
+    socket.on('test-event1', function(){
+        console.log('got test-event1');
+    });
+
+    socket.on('test-event2', function(data){
+        console.log('got test-event2');
+        console.log(data);
+
+        socket.emit('test-event', {
+            test:12345,
+            test2: 'test emit event'
+        });
+    });
+
+    socket.on('test-event3', function(data, callback){
+        console.log('got test-event3');
+        console.log(data);
+
+        callback({
+            test: 123456,
+            test2: "test3"
+        });
+    });
+    socket.on('error', (err) => {
+        console.error("Socket encountered an error: ", err);
+    });
+
 });
+io.on('error', (err) => {
+    console.error("Socket.IO server encountered an error: ", err);
+});
+
+console.log(`Socket.IO server running at port ${port}`);
